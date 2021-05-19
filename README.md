@@ -1,1 +1,1 @@
-# CloudGuard-CSPM-Calc
+# CloudGuard-CSPM-Calculator
