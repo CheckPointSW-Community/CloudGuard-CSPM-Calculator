@@ -1,15 +1,31 @@
 # CloudGuard-CSPM-Calculator for Azure
 
-## Todo
+## Todo flow logs
 
 John - will get network watch flow-log details from SDK
 Mark - will get storage details from SDK
 
+## Todo flow logs
+
+User activity logs (Not started yet)
+
 ## John
 - Get network watcher nsg group details
 
+Az command 
 ```
 az network watcher flow-log list --location westus2
+```
+
+Python
+```
+    network_watcher_list = network_client.network_watchers.list_all()
+    for network_watcher in network_watcher_list:
+        print(network_watcher)
+
+    network_security_groups_list = network_client.network_security_groups.list_all()
+    for network_security_groups in network_security_groups_list:
+        print(network_security_groups)
 ```
 
 ## Mark
