@@ -112,13 +112,9 @@ def run_sizer():
                         print("{:20} {:20} {:20}".format(a.name,"||", a.location))
             # John
             print(Fore.WHITE + "================================================================================================")
-            print(Fore.YELLOW + "{:20} {:20} {:20}".format("Network Watchers","||","Azure Region"))
+            print(Fore.YELLOW + "{:20} {:20} {:20}".format("Network Watchers -> FLow Logs -> Storage ID","||","Azure Region"))
             print(Fore.WHITE + "================================================================================================")
             for network_watcher in network_client.network_watchers.list_all():
-                #print("{:20} {:20} {:20}".format(network_watcher.name,"||", network_watcher.location))
-                # print(Fore.WHITE + "================================================================================================")
-                # print(Fore.YELLOW + "{:20} {:20} {:20}".format("Flow Log","||","Stuff change me"))
-                # print(Fore.WHITE + "================================================================================================")
                 flow_log_list = network_client.flow_logs.list(
                     "NetworkWatcherRG",
                     network_watcher.name
