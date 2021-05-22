@@ -18,6 +18,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from colorama import Fore,init
 from azure.mgmt.web import WebSiteManagementClient
 from azure.core.exceptions import HttpResponseError
+from azure.mgmt.network import NetworkManagementClient
 
 
 
@@ -79,6 +80,7 @@ def run_sizer():
             sql_client = SqlManagementClient(credentials, sub.subscription_id)
             compute_client = ComputeManagementClient(credentials, sub.subscription_id) 
             web_client = WebSiteManagementClient(credentials, sub.subscription_id)
+            network_client = NetworkManagementClient(credentials, sub.subscription_id)
             sub_total_number_sql_servers = 0
             sub_total_number_vms = 0
             sub_total_number_functions = 0
@@ -108,6 +110,23 @@ def run_sizer():
                     if "functionapp" in appkind:
                         sub_total_number_functions += 1
                         print("{:20} {:20} {:20}".format(a.name,"||", a.location))
+            # John
+            print(Fore.WHITE + "================================================================================================")
+            print(Fore.YELLOW + "{:20} {:20} {:20}".format("Network Watchers","||","Azure Region"))
+            print(Fore.WHITE + "================================================================================================")
+            for network_watcher in network_client.network_watchers.list_all():
+                #print("{:20} {:20} {:20}".format(network_watcher.name,"||", network_watcher.location))
+                # print(Fore.WHITE + "================================================================================================")
+                # print(Fore.YELLOW + "{:20} {:20} {:20}".format("Flow Log","||","Stuff change me"))
+                # print(Fore.WHITE + "================================================================================================")
+                flow_log_list = network_client.flow_logs.list(
+                    "NetworkWatcherRG",
+                    network_watcher.name
+                    )
+                for flowlog in flow_log_list:
+                    #print(flowlog)
+                    print("{:20} {:20} {:20}".format(flowlog.storage_id,"||", network_watcher.location))
+            # John
             total_number_sql_servers = total_number_sql_servers + sub_total_number_sql_servers
             total_number_vms = total_number_vms + sub_total_number_vms
             total_number_functions = total_number_functions + sub_total_number_functions
@@ -129,5 +148,6 @@ def run_sizer():
     total_number_functions_licenses = total_number_functions //6
     print("Total number of CloudGuard billable assets licenses is :", total_number_sql_servers + total_number_vms + total_number_functions_licenses)
     print
+
 if __name__ == "__main__":
     run_sizer()
