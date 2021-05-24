@@ -7,7 +7,17 @@ Mark - will get storage details from SDK
 
 ## Todo flow logs
 
-User activity logs (Not started yet)
+User activity logs
+    - Storage blog logs
+        - Search each storage blog for $logs, then calculate $logs for size
+    - Not sure how to support others...they log to specific storage logs
+        - Activity logs 
+        - Sign-ins logs
+        - Audit logs
+
+    References
+    - https://docs.microsoft.com/en-us/azure/storage/common/storage-analytics-logging?tabs=dotnet
+
 
 ## John
 - Get network watcher nsg group details
