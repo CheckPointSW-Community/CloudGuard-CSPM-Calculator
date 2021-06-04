@@ -10,21 +10,21 @@ This will help you calculate number of assets for CSPM and Log size for Threat I
 
 - Paste the following into command prompt
 
-export AZURE_TENANT_ID="xxx"
+    export AZURE_TENANT_ID="xxx"
 
-export AZURE_CLIENT_ID="xxx"
+    export AZURE_CLIENT_ID="xxx"
 
-export AZURE_CLIENT_SECRET="xxx"
+    export AZURE_CLIENT_SECRET="xxx"
 
-export SUBSCRIPTION_ID="xxx"
+    export SUBSCRIPTION_ID="xxx"
 
 # Install requirements 
 
-pip3 install -r requirements.txt
+    pip3 install -r requirements.txt
 
 # Run the script
 
-python3 d9-sizer.py
+    python3 d9-sizer.py
 
 ## Output
 
