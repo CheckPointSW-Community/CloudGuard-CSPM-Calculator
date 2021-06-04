@@ -24,6 +24,8 @@ from azure.core.exceptions import HttpResponseError
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.monitor import MonitorManagementClient
 from azure.mgmt.network import NetworkManagementClient
+from azure.storage.blob import ContainerClient
+from azure.storage.blob import BlobServiceClient
 
 init()
 
@@ -101,29 +103,30 @@ def run_sizer():
             sub_total_number_sql_servers = 0
             sub_total_number_vms = 0
             sub_total_number_functions = 0
+            sub_stg_acct_used = 0
             sub_flow_stg_used = 0
 
             print(Fore.WHITE + "================================================================================================")
-            print(Fore.YELLOW + "{:20} {:20} {:20}".format("SQL Server Name", "||","Azure Region",))
+            print(Fore.YELLOW + "{:25} {:20} {:20}".format("SQL Server Name", "||","Azure Region",))
             print(Fore.WHITE + "================================================================================================")
 
             for item in sql_client.servers.list():
-                print("{:20} {:20} {:20}".format(item.name,"||",item.location))
+                print("{:25} {:20} {:20}".format(item.name,"||",item.location))
                 sub_total_number_sql_servers = sub_total_number_sql_servers + 1
 
             print("\n")
             print(Fore.WHITE + "================================================================================================")
-            print(Fore.YELLOW + "{:20} {:20} {:20} {:20} {:20}".format("Virtual machine name","||","Instance Size","||","Azure Region"))
+            print(Fore.YELLOW + "{:25} {:20} {:20} {:20} {:20}".format("VM name","||","Instance Size","||","Azure Region"))
             print(Fore.WHITE + "================================================================================================")
 
             for vm in compute_client.virtual_machines.list_all():    
-                print("{:20} {:20} {:20} {:20} {:20}".format(vm.name,"||",vm.hardware_profile.vm_size,"||",vm.location))
+                print("{:25} {:20} {:20} {:20} {:20}".format(vm.name,"||",vm.hardware_profile.vm_size,"||",vm.location))
                 if vm.hardware_profile.vm_size not in ("Standard_A0","Standard_D0","Basic_A0","Basic_D0"):
                     sub_total_number_vms = sub_total_number_vms + 1
 
             print("\n")
             print(Fore.WHITE + "================================================================================================")
-            print(Fore.YELLOW + "{:20} {:20} {:20}".format("Function name","||","Azure Region"))
+            print(Fore.YELLOW + "{:25} {:20} {:20}".format("Function name","||","Azure Region"))
             print(Fore.WHITE + "================================================================================================")
 
             for resource_group in resource_client.resource_groups.list():
@@ -133,11 +136,41 @@ def run_sizer():
                     appkind = a.kind
                     if "functionapp" in appkind:
                         sub_total_number_functions += 1
-                        print("{:20} {:20} {:20}".format(a.name,"||", a.location))
+                        print("{:25} {:20} {:20}".format(a.name,"||", a.location))
+
+            print("\n")
+            #print(Fore.WHITE + "================================================================================================")
+            #print(Fore.YELLOW + "{:25} {:20} {:20}".format("Storage Account name","||","Used Size in Bytes"))
+            #print(Fore.WHITE + "================================================================================================")
+            #for resource_group in resource_client.resource_groups.list():
+            #    rg_name = resource_group.name
+                #stg_list = storage_client.storage_accounts.list_by_resource_group(rg_name)
+                #for b in stg_list:
+                #    try: 
+                #        stgacct = b.id
+                #        stgacctname = b.name
+                #        stg_used_capacity = mgmt_client.metrics.list(stgacct,stg_timespan,stg_interval,stg_metric)
+                #        stg_capacity_dict = (stg_used_capacity.as_dict())
+                #        stg_capacity_str = json.dumps(stg_capacity_dict)
+                #        stg_capacity_json = json.loads(stg_capacity_str)
+                #        stg_used_value = stg_capacity_json['value'][0]['timeseries'][0]['data'][0]['average']
+                #    except Exception as g:
+                #        print(g)
+                #        print(stgacctname,"Is empty")
+                #    else:
+                #        print("{:25} {:20} {:20}".format(stgacctname,"||", stg_used_value))
+                #        blob_string = "https://" + stgacctname + ".blob.core.windows.net/"
+                #        blob_service_client = BlobServiceClient(blob_string,credentials)
+                #        all_containers = blob_service_client.list_containers(include_metadata=True)
+                #        print("   Containers in this storage account are:")
+                #        for container in all_containers:
+                #            print("     ",container['name'])
+                #        sub_stg_acct_used = sub_stg_acct_used + float(stg_used_value)/1024/1024
+
 
             # John
             print(Fore.WHITE + "================================================================================================")
-            print(Fore.YELLOW + "{:20} {:20} {:20}".format("Network Watchers -> FLow Logs -> Storage ID","||","Azure Region"))
+            print(Fore.YELLOW + "{:25} {:20} {:20}".format("Network Watchers -> Flow Logs -> Stg Acct","||","Used Size in Bytes"))
             print(Fore.WHITE + "================================================================================================")
             for network_watcher in network_client.network_watchers.list_all():
                 flow_log_list = network_client.flow_logs.list(
@@ -145,23 +178,31 @@ def run_sizer():
                     network_watcher.name
                     )
                 for flowlog in flow_log_list:
-                    #print(flowlog)
-                    #print("{:20} {:20} {:20}".format(flowlog.storage_id,"||", network_watcher.location))
-                # John
+                    #print("{:25} {:20} {:20}".format(flowlog.storage_id,"||", network_watcher.location))
+                    try: 
+                        stgacct = flowlog.storage_id
+                        stgacctlist = stgacct.rsplit("/",1)
+                        stgacctname = stgacctlist[-1]
+                        flowlogname = flowlog.name
+                        stg_used_capacity = mgmt_client.metrics.list(stgacct,stg_timespan,stg_interval,stg_metric)
+                        stg_capacity_dict = (stg_used_capacity.as_dict())
+                        stg_capacity_str = json.dumps(stg_capacity_dict)
+                        stg_capacity_json = json.loads(stg_capacity_str)
+                        stg_used_value = stg_capacity_json['value'][0]['timeseries'][0]['data'][0]['average']
+                    except Exception as f: 
+                        print(f)
+                        print(stgacctname,"Is empty")
+                    else:
+                        print("{:25} {:20} {:20}".format(flowlogname,"||", stg_used_value))
+                        print("  The storage account for this flowlog is: ", stgacctname)
+                        blob_string = "https://" + stgacctname + ".blob.core.windows.net/"
+                        blob_service_client = BlobServiceClient(blob_string,credentials)
+                        all_containers = blob_service_client.list_containers(include_metadata=True)
+                        for container in all_containers:
+                            if container['name'] != "insights-logs-networksecuritygroupflowevent":
+                                print("WARNING, calculation may be off because of this container:",container['name'])
 
-                #stg_list = storage_client.storage_accounts.list_by_resource_group(rg_name)
-                
-                #for b in stg_list:
-                    #stgacct = b.id
-                    stgacct = flowlog.storage_id
-                    stgacctname = flowlog.name
-                    stg_used_capacity = mgmt_client.metrics.list(stgacct,stg_timespan,stg_interval,stg_metric)
-                    stg_capacity_dict = (stg_used_capacity.as_dict())
-                    stg_capacity_str = json.dumps(stg_capacity_dict)
-                    stg_capacity_json = json.loads(stg_capacity_str)
-                    stg_used_value = stg_capacity_json['value'][0]['timeseries'][0]['data'][0]['average']
-                    print(stgacctname,"     Used Capacity in bytes:",stg_used_value)
-                    sub_flow_stg_used = sub_flow_stg_used + float(stg_used_value)/1024/1024
+                        sub_flow_stg_used = sub_flow_stg_used + float(stg_used_value)/1024/1024
 
             total_number_sql_servers = total_number_sql_servers + sub_total_number_sql_servers
             total_number_vms = total_number_vms + sub_total_number_vms
@@ -172,7 +213,7 @@ def run_sizer():
             print("Total number of billable SQL Servers in subscription", sub.display_name,":",sub_total_number_sql_servers)
             print("Total number of billable virtual machines in subscription", sub.display_name,":",sub_total_number_vms)
             print("Total number of billable functions in subscription", sub.display_name, ":",sub_total_number_functions)
-            print("Total flowlog storage used in subscription", sub.display_name, ": {:.2f}".format(sub_flow_stg_used)," MB")
+            print("Total estimated flowlog storage used in subscription", sub.display_name, ": {:.2f}".format(sub_flow_stg_used)," MB")
     except HttpResponseError as e:
         print(e)
     print("\n")
@@ -183,7 +224,7 @@ def run_sizer():
     print("Total number of billable SQL Servers in Azure AD tenant", az_tenant,":",total_number_sql_servers)
     print("Total number of billable virtual machines in Azure AD tenant", az_tenant,":",total_number_vms)
     print("Total number of billable functions in Azure AD tenant", az_tenant,":",total_number_functions )
-    print("Total flowlog storage used in Azure AD tenant", az_tenant, ": {:.2f}".format(total_flow_stg_used)," MB")
+    print("Total estimated flowlog storage used in Azure AD tenant", az_tenant, ": {:.2f}".format(total_flow_stg_used)," MB")
     print("\n")
     total_number_functions_licenses = total_number_functions //6
     print("Total number of CloudGuard billable assets licenses is :", total_number_sql_servers + total_number_vms + total_number_functions_licenses)
