@@ -8,8 +8,6 @@ This will help you calculate number of assets for CSPM and Log size for Threat I
 
 # Setup your account
 
-- Paste the following into command prompt
-
     export AZURE_TENANT_ID="xxx"
     export AZURE_CLIENT_ID="xxx"
     export AZURE_CLIENT_SECRET="xxx"
