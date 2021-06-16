@@ -3,5 +3,12 @@ azure-mgmt-compute==17.0.0
 azure-mgmt-network==16.0.0
 azure-mgmt-resource==15.0.0
 azure-mgmt-storage==16.0.0
-azure-mgmt-monitor==2.0.0
-azure-storage-blob==12.8.1
+
+azure-mgmt-subscription 
+msrestazure
+azure-mgmt-web 
+azure-core
+
+azure-mgmt-monitor 
+azure-storage-blob 
+
