@@ -58,3 +58,6 @@ Similarly, it is possible to set the `AWS_ACCESS_KEY_ID` (and `AWS_SECRET_ACCESS
 
 ## Results
 Pretty self explanatory. The scripts enumerates relevant CWL groups and relevant S3 buckets and estimates the daily/monthy data volume (non compressed).
+
+### Credit
+This project originated on the Dome9 github. 
