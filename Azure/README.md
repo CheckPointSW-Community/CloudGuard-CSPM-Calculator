@@ -46,4 +46,5 @@ OR
 
     Total number of CloudGuard billable assets licenses is : 6
     
- ### This project originated by the github user chrisbeckett
+ ### Credit
+ This project originated by the github user chrisbeckett
