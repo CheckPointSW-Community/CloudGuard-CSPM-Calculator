@@ -38,7 +38,7 @@ class Credentials:
         self.token_string = token_string
         # print("TOKEN STRING", token_string)
         self.token = json.loads(self.token_string)
-        # print("token", self.token)
+        print("token", self.token)
 
     def get_token(self, scope):
         exp = self.token["expiresOn"]
@@ -58,6 +58,7 @@ def unix_time_millis(dt):
 
 def main(argv):
     # helper class
+    
     class sub():
         pass
 
@@ -74,6 +75,7 @@ def main(argv):
     sub = sub()
     sub.subscription_id = credentials.get_subscription()
     sub.display_name = "Subscription"
+    print("Subscription ID" + sub.subscription_id)
     sub_client = [sub]
     run_sizer(credentials, sub_client)
 

@@ -18,6 +18,8 @@ az account get-access-token --subscription 0000000-0000-0000-0000-000000000000
 
 Then copy what azure returns which should start and end with "{" and "}" and run it with the following command (the single quotes are required):
 
+TODO //Add Example of how to run
+
 python sizer-with-input-token.py 'accessToken'
 
 Where the accessToken is what you copied and from the azure CLI.
