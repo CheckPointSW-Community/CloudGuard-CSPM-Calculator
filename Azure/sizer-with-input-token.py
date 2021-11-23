@@ -4,6 +4,8 @@
 # To run the script, you will need to set environment variables for AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_TENANT_ID
 
 # Import required libraries
+import io
+from os.path import expanduser
 import os
 import sys
 import logging
@@ -28,57 +30,77 @@ from azure.storage.blob import BlobServiceClient
 from azure.identity import AzureCliCredential
 from azure.core.credentials import AccessToken
 
-
 init()
 
+# Searches path regardless of Operating System
+home = expanduser("~")
 
+
+# Validates token credentials and returns AccessToken() result
 class Credentials:
 
-    def __init__(self, token_string):
-        self.token_string = token_string
-        # print("TOKEN STRING", token_string)
-        self.token = json.loads(self.token_string)
-        # print("token", self.token)
+    def __init__(self, givingToken, givingSubscription, givenExpire):
+        self.token = givingToken
+        self.subscription = givingSubscription
+        self.expire = givenExpire
+
+    def check(self):
+        print("Token: ", self.token)
+        print("Subscrp: ", self.subscription)
+        print("Expire: ", self.expire)
 
     def get_token(self, scope):
-        exp = self.token["expiresOn"]
+        exp = self.expire
         exp = dateT.strptime(exp, '%Y-%m-%d %H:%M:%S.%f')
-        return AccessToken(self.token["accessToken"], unix_time_millis(exp))
-
-    def get_subscription(self):
-        # future should return a name as well
-        return self.token["subscription"]
+        return AccessToken(self.token, unix_time_millis(exp))
 
 
-# converting to float after epoch
+# Opens "azureProfle.json" from the ".azure" directory.
+# Reads in data and converts to string variable "json_pfile"
+# "json_pfile" is then loaded into JSON with "json.loads()"
+# for loop searchs data for 'subscription' and returns the value.
+def get_subscription():
+    p = home + '/.azure/azureProfile.json'
+    with io.open(p, 'r', encoding='utf-8-sig') as json_pfile:
+        pdata = json.load(json_pfile)
+        for subsript in pdata['subscriptions']:
+            return subsript['id']
+
+
+# Opens "azureToken.json" from the ".azure" directory.
+# Reads in data and converts to string variable "json_tfile"
+# "json_tfile" is then loaded into JSON with "json.loads()"
+# sort to find the latest date and time,
+# Search for and Return "accessToken" value
+def list_token():
+    t = home + '/.azure/accessTokens.json'
+    with io.open(t, 'r', encoding='utf-8-sig') as json_tfile:
+        tdata = json.load(json_tfile)
+        tdata.sort(key=lambda x: x["expiresOn"])
+        return tdata[-1]["accessToken"]
+
+
+# Opens "azureToken.json" from the ".azure" directory.
+# Reads in data and converts to string variable "json_efile"
+# "json_efile" is then loaded into JSON with "json.loads()"
+# sort to find the latest date and time,
+# Search for and Return "expiresOn" value
+def get_expiration():
+    e = home + '/.azure/accessTokens.json'
+    with io.open(e, 'r', encoding='utf-8-sig') as json_efile:
+        edata = json.load(json_efile)
+        edata.sort(key=lambda x: x["expiresOn"])
+        return edata[-1]["expiresOn"]
+
+
+# Provides a required conversion for AccessToken()
 def unix_time_millis(dt):
     epoch = dateT.utcfromtimestamp(0)
     return (dt - epoch).total_seconds() * 1000.0
 
 
-def main(argv):
-    # helper class
-    class sub():
-        pass
-
-    try:
-
-        credentials = Credentials(argv)
-
-
-    except:
-        print("Invalid token, please make sure the token is correct.")
-        sys.exit(0)
-
-    # create subscription object
-    sub = sub()
-    sub.subscription_id = credentials.get_subscription()
-    sub.display_name = "Subscription"
-    sub_client = [sub]
-    run_sizer(credentials, sub_client)
-
-
-# Connect to each subscription in turn and list all VMs, Functions and Azure SQL servers, collecting CloudGuard billable asset counts
+# Provides all required calculations and Displays
+# information of workflow and assets in an Azure Account
 def run_sizer(credentials, sub_client):
     total_number_sql_servers = 0
     total_number_vms = 0
@@ -264,10 +286,27 @@ def run_sizer(credentials, sub_client):
     print
 
 
-if __name__ == "__main__":
-    # to run with explicit token
-    # token_string = 'access_token_string'
-    # main(token_string)
+# Helper Class
+class sub:
+    pass
 
-    #second argument is the string access token
-    main(sys.argv[1])
+
+# Boiler Plate
+if __name__ == "__main__":
+    # Grab info from files with functions.
+    subscription_id = get_subscription()
+    token = list_token()
+    exp = get_expiration()
+
+    # calls Credential class
+    credentials = Credentials(token, subscription_id, exp)
+
+    # calls Helper class
+    sub = sub()
+    sub.subscription_id = subscription_id
+    sub.display_name = "Subscription"
+    sub_client = [sub]
+
+    # Performs calculations and  displays results,
+    # with Credentials and Helper class as attributes.
+    run_sizer(credentials, sub_client)

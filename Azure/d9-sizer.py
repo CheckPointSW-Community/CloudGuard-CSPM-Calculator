@@ -9,6 +9,7 @@ import sys
 import logging
 import datetime
 import json
+import pip
 
 from azure.identity import ClientSecretCredential
 from azure.mgmt.resource import ResourceManagementClient
@@ -17,7 +18,7 @@ from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.subscription.operations import SubscriptionsOperations
 from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.compute import ComputeManagementClient
-from colorama import Fore,init
+from colorama import Fore, init
 from azure.mgmt.web import WebSiteManagementClient
 from azure.core.exceptions import HttpResponseError
 
