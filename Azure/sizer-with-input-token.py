@@ -16,7 +16,7 @@ from azure.identity import ClientSecretCredential, DefaultAzureCredential
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.sql import SqlManagementClient
 from azure.mgmt.subscription import SubscriptionClient
-from azure.mgmt.subscription.operations import SubscriptionsOperations
+# from azure.mgmt.subscription.operations import SubscriptionsOperations
 from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.compute import ComputeManagementClient
 from colorama import Fore, init
@@ -60,11 +60,10 @@ class Credentials:
 # "json_pfile" is then loaded into JSON with "json.loads()"
 # for loop searchs data for 'subscription' and returns the value.
 def get_subscription():
-    p = home + '/.azure/azureProfile.json'
+    p = home + '/azureToken.json'
     with io.open(p, 'r', encoding='utf-8-sig') as json_pfile:
         pdata = json.load(json_pfile)
-        for subsript in pdata['subscriptions']:
-            return subsript['id']
+        return pdata["subscription"]
 
 
 # Opens "azureToken.json" from the ".azure" directory.
@@ -73,11 +72,10 @@ def get_subscription():
 # sort to find the latest date and time,
 # Search for and Return "accessToken" value
 def list_token():
-    t = home + '/.azure/accessTokens.json'
+    t = home + '/azureToken.json'
     with io.open(t, 'r', encoding='utf-8-sig') as json_tfile:
         tdata = json.load(json_tfile)
-        tdata.sort(key=lambda x: x["expiresOn"])
-        return tdata[-1]["accessToken"]
+        return tdata["accessToken"]
 
 
 # Opens "azureToken.json" from the ".azure" directory.
@@ -86,11 +84,10 @@ def list_token():
 # sort to find the latest date and time,
 # Search for and Return "expiresOn" value
 def get_expiration():
-    e = home + '/.azure/accessTokens.json'
+    e = home + '/azureToken.json'
     with io.open(e, 'r', encoding='utf-8-sig') as json_efile:
         edata = json.load(json_efile)
-        edata.sort(key=lambda x: x["expiresOn"])
-        return edata[-1]["expiresOn"]
+        return edata["expiresOn"]
 
 
 # Provides a required conversion for AccessToken()
